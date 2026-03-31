@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Sábia e a Visão</title>
+  <style>
+    :root {
+      /* Cores Padrão (Campo) */
+      --bg-color: #1a1a1a;
+      --text-color: #d1d1c1;
+      --meta-color: #888888;
+      
+      /* Cores Visão (Bar) */
+      --bg-vision: #0f0b08; /* Um fundo ainda mais escuro e quente */
+      --text-vision: #e0ac69; /* Dourado/Sépia */
+    }
+
+    body {
+      font-family: 'Georgia', serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      transition: background-color 1s ease; /* Transição suave de cenário */
+    }
+
+    /* Classe ativada via JS quando o cenário é a visão */
+    body.modo-visao {
+      background-color: var(--bg-vision);
+      color: var(--text-vision);
+    }
+
+    /* Container do texto */
+    #text-container {
+      width: 100%;
+      max-width: 500px;
+      padding: 0 12vw;
+      text-align: left;
+      opacity: 0; /* Começa invisível para a animação inicial */
+      transform: translateY(15px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    /* Estilos baseados no tipo do bloco */
+    .titulo {
+      font-size: 28px;
+      font-style: italic;
+      text-align: center;
+      color: var(--meta-color);
+      font-weight: normal;
+    }
+
+    .narracao, .dialogo {
+      font-size: 20px;
+      line-height: 1.7;
+    }
+
+    .dialogo {
+      margin-left: 10px;
+    }
+
+    .pausa {
+      font-size: 18px;
+      text-align: center;
+      font-style: italic;
+      letter-spacing: 0.1em;
+      color: var(--meta-color);
+    }
+
+    /* Navegação */
+    .nav-btn {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 15vw; /* Área de toque generosa nas laterais */
+      background: none;
+      border: none;
+      color: var(--meta-color);
+      font-size: 30px;
+      cursor: pointer;
+      opacity: 0.2;
+      transition: opacity 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .nav-btn:hover {
+      opacity: 0.8;
+    }
+
+    .nav-btn:disabled {
+      opacity: 0;
+      cursor: default;
+    }
+
+    #btn-prev { left: 0; }
+    #btn-next { right: 0; }
+
+    /* Ocultar as setas visualmente em telas muito pequenas para não poluir, 
+       mas manter a área clicável */
+    @media (max-width: 600px) {
+      .nav-btn span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <button id="btn-prev" class="nav-btn"><span>&#10094;</span></button>
+  
+  <div id="text-container"></div>
+
+  <button id="btn-next" class="nav-btn"><span>&#10095;</span></button>
+
+  <script>
+    // O seu texto estruturado em JSON
+    const historia = [
+      { "id": "bloco-001", "tipo": "titulo", "cenario": "campo", "texto": "Por quê?" },
+      { "id": "bloco-002", "tipo": "narracao", "cenario": "campo", "texto": "Era um campo verde, num nascer do sol de madrugada. Havia uma árvore enorme, cheia de folhas. A sábia e eu estávamos sentados sob ela. A sábia, sentada como se estivesse conectada à terra por uma raiz, meditando sobre um tapete de yoga. Eu estava de joelhos na grama." },
+      { "id": "bloco-003", "tipo": "narracao", "cenario": "campo", "texto": "A sábia, que estava sempre de olhos fechados, me disse: pede o que você precisa e aceita o que o outro pode te oferecer..." },
+      { "id": "bloco-004", "tipo": "narracao", "cenario": "campo", "texto": "Eu lembrava da sábia falando as coisas que me fariam ter uma vida tranquila e talvez algum dia encontrar a felicidade. Eu fazia poucas perguntas, até porque havia entendido o que ela disse..." },
+      { "id": "bloco-005", "tipo": "dialogo", "cenario": "campo", "texto": "— Sábia, o que faço se eu quero mais? Se eu achei pouco?" },
+      { "id": "bloco-006", "tipo": "dialogo", "cenario": "campo", "texto": "— Não há o que fazer — disse a sábia." },
+      { "id": "bloco-007", "tipo": "dialogo", "cenario": "campo", "texto": "— Eu estava tão cheio de expectativas, achei que a veria... que passaríamos a noite conversando..." },
+      { "id": "bloco-008", "tipo": "narracao", "cenario": "campo", "texto": "A sábia, que raramente fazia perguntas, indagou:" },
+      { "id": "bloco-009", "tipo": "dialogo", "cenario": "campo", "texto": "— Você não a viu, nem conversou com ela?" },
+      { "id": "bloco-010", "tipo": "dialogo", "cenario": "campo", "texto": "— A gente assistiu algo juntos, conversamos durante, mas ela estava com sono para ver outro... E eu abri minha câmera achando que ela abriria a dela, sei lá..." },
+      { "id": "bloco-011", "tipo": "narracao", "cenario": "campo", "texto": "A sábia se manteve em silêncio, respirou, e me disse:" },
+      { "id": "bloco-012", "tipo": "dialogo", "cenario": "campo", "texto": "— Daquilo que você deseja, você tem menos do que gostaria... mas você tem mais do que imagina." },
+      { "id": "bloco-013", "tipo": "narracao", "cenario": "campo", "texto": "Eu estava esperando que a sábia concordasse comigo, viesse me abraçar ou confortar, dizer que meu coração está cheio de carinho e eu só me enganei por achar que ia despejar todo aquele carinho naquela hora... Mas cada frase dela parecia um murro no meu estômago, e esse foi tão certeiro que doeu." },
+      { "id": "bloco-014", "tipo": "dialogo", "cenario": "campo", "texto": "— Eu estou errado em ter sentido vontade de conversar com ela a noite toda, ou de querer vê-la...?" },
+      { "id": "bloco-015", "tipo": "dialogo", "cenario": "campo", "texto": "— Você estava disposto a conversar a noite toda com ela? Estava disposto a ficar na câmera com ela? Isso não é sobre você estar certo ou errado." },
+      { "id": "bloco-016", "tipo": "dialogo", "cenario": "campo", "texto": "— Como assim, é sobre o que, então?" },
+      { "id": "bloco-017", "tipo": "narracao", "cenario": "campo", "texto": "Lá vem outra porrada:" },
+      { "id": "bloco-018", "tipo": "dialogo", "cenario": "campo", "texto": "— Reconhece o esforço, não só os resultados." },
+      { "id": "bloco-019", "tipo": "pausa", "cenario": "campo", "texto": "Silêncio." },
+      { "id": "bloco-020", "tipo": "dialogo", "cenario": "campo", "texto": "— O esforço dela ou o meu?" },
+      { "id": "bloco-021", "tipo": "dialogo", "cenario": "campo", "texto": "— Ambos." },
+      { "id": "bloco-022", "tipo": "narracao", "cenario": "campo", "texto": "Eu senti um vento soprar, daqueles que te pegam desprevenido, sobem pela sua espinha e te fazem tremer quando batem." },
+      { "id": "bloco-023", "tipo": "dialogo", "cenario": "campo", "texto": "— Eu sei que ela parou a vida dela pra estar ali comigo, eu sei que ela quer novamente e que eu vou adorar, vai ser divertido..." },
+      { "id": "bloco-024", "tipo": "dialogo", "cenario": "campo", "texto": "— Pare — disse a sábia." },
+      { "id": "bloco-025", "tipo": "dialogo", "cenario": "campo", "texto": "— Qual o problema?" },
+      { "id": "bloco-026", "tipo": "dialogo", "cenario": "campo", "texto": "— Essas são suas expectativas, sua capacidade, você sabe do que é capaz." },
+      { "id": "bloco-027", "tipo": "dialogo", "cenario": "campo", "texto": "— E qual é o problema??" },
+      { "id": "bloco-028", "tipo": "narracao", "cenario": "campo", "texto": "A sábia abriu os olhos, me encarou com uma expressão séria, e disse:" },
+      { "id": "bloco-029", "tipo": "dialogo", "cenario": "campo", "texto": "— É o que você finge que não sabe." },
+      { "id": "bloco-030", "tipo": "narracao", "cenario": "campo", "texto": "A sábia era muito enigmática, mas eu fiquei tão assustado com aquele olhar que todos os meus segredos subiram como bolhas num copo de refrigerante. Eu suava como esse copo frio, e as bolhas não paravam de subir. Eu não podia esconder, nem fingir que não via, estava ali o que eu \"fingia não saber\". Eu não sou um amigo, eu finjo ser. Que amigo espera o fracasso do relacionamento do outro? Isso é um oportunista, um invejoso, um guarda-caixão... É certo ser assim numa amizade? Querendo roubar a pessoa de outra? Querendo-a só pra si?" },
+      { "id": "bloco-031", "tipo": "narracao", "cenario": "campo", "texto": "A sábia, ainda me olhando, disse:" },
+      { "id": "bloco-032", "tipo": "dialogo", "cenario": "campo", "texto": "— Não tente controlar as pessoas que você ama." },
+      { "id": "bloco-033", "tipo": "narracao", "cenario": "campo", "texto": "Uma lágrima desceu pelo meu rosto. Era culpa." },
+      { "id": "bloco-034", "tipo": "dialogo", "cenario": "campo", "texto": "— Não resista, agora você está entendendo — continuou ela. — Não resista." },
+      { "id": "bloco-035", "tipo": "narracao", "cenario": "campo", "texto": "Ela colocou um dedo indicador na própria têmpora, e outro na minha. Tive uma sensação de desmaio, como se eu caísse para dentro dos meus próprios olhos." },
+      { "id": "bloco-036", "tipo": "narracao", "cenario": "visao_bar", "texto": "Estou te vendo. Luzes quentes e amarelas, calor, madeira rústica, roupas de frio. Meu Deus, como você está linda. Nós rimos e a sensação que toma o meu peito é uma só: é hoje. A noite do nosso primeiro beijo. Não há nada que impeça, você está solteira e nós estamos fisicamente juntos. Mas então o ar fica denso. A sábia caminha pelo bar, atravessando objetos, mesas e pessoas. Ninguém a vê. Ela toca a própria orelha e o mundo gira. Um solavanco." },
+      { "id": "bloco-037", "tipo": "narracao", "cenario": "visao_bar", "texto": "Não estou mais em mim. Despenco para trás dos olhos dela. Sou um espectador dentro da sua cabeça. Vejo a nós dois, lá no balcão, praticamente como um casal, combinando até nas cores da roupa. Mas não controlo o pescoço da sábia, não controlo seus olhos. Somos arrastados para o outro lado da cena. Um cara no bar. Estiloso, traços finos, rosto liso, cabelo um pouco longo, algumas tatuagens. O olhar dele está cravado em você. Insistente, especialmente quando ele bebe. Até que você, de canto de olho, o percebe." },
+      { "id": "bloco-038", "tipo": "narracao", "cenario": "visao_bar", "texto": "A troca de olhares aumenta. Um fio invisível se esticando entre vocês. Não consigo mais sentir nada além de um vazio congelante. A única coisa que ecoa suavemente na minha mente paralisada é a voz da sábia: \"Não resista\"." },
+      { "id": "bloco-039", "tipo": "narracao", "cenario": "visao_bar", "texto": "Você se afasta do meu corpo lá no balcão e caminha até o bar. O cara se vira para a frente. \"Dois jagerbomb, por favor\", você pede. Você sabe que é o meu favorito. Mas seus olhos fogem, espiam o rosto dele de lado. Ele não recua. — Jagerbomb. Muito bom — ele diz, e vai voltando o corpo lentamente, de lado para o balcão, de frente para você. Você pega os drinks. Responde com um sorriso: \"É mesmo\". E lança um olhar rápido, mas afiado, varrendo o rosto dele, como se quisesse ter certeza de quem ele é e do perigo que representa." },
+      { "id": "bloco-040", "tipo": "narracao", "cenario": "visao_bar", "texto": "O tempo acelera. As horas derretem, nossos amigos vão embora. Nós dois encostados no balcão. Eu — o meu eu ignorante do passado — converso com o barman, alheio a tudo, sem perceber o predador espreitando. Meu plano, na minha cabeça cega, é te beijar no caminho de casa e confessar minha vontade de passar a vida ao seu lado. Viro para você e pergunto: \"Vamos?\"." },
+      { "id": "bloco-041", "tipo": "dialogo", "cenario": "visao_bar", "texto": "— Vai descansar... eu vou ficar mais um pouco — você responde." },
+      { "id": "bloco-042", "tipo": "narracao", "cenario": "visao_bar", "texto": "Eu saio. Confuso e perdido. O cara agora te encara de frente, mas ainda em silêncio. O barman, limpando o balcão, te pergunta:" },
+      { "id": "bloco-043", "tipo": "dialogo", "cenario": "visao_bar", "texto": "— Você não vai embora com o seu namorado?" },
+      { "id": "bloco-044", "tipo": "pausa", "cenario": "visao_bar", "texto": "O golpe. Seco." },
+      { "id": "bloco-045", "tipo": "dialogo", "cenario": "visao_bar", "texto": "— Não, ele é só um amigo — a sua voz soa natural, sem peso. — Somos amigos de muitos anos... Eu sei tanto sobre a vida dele, e ele sabe tanto sobre a minha, que nem passa pela minha cabeça termos algo. Sabe, não tem mais mistério..." },
+      { "id": "bloco-046", "tipo": "narracao", "cenario": "visao_bar", "texto": "O barman faz uma cara de surpresa, mas fica na dele. É então que o cara do outro lado estica a coluna, como quem ganha permissão. Vira para você." },
+      { "id": "bloco-047", "tipo": "dialogo", "cenario": "visao_bar", "texto": "— Quer mais um drink?" },
+      { "id": "bloco-048", "tipo": "dialogo", "cenario": "visao_bar", "texto": "— Quero." },
+      { "id": "bloco-049", "tipo": "narracao", "cenario": "campo", "texto": "Eu pulei pra trás. Caí de costas na grama, olhando o balançar das folhas na árvore e as nuvens enormes se movendo devagar, como se saíssem de trás dos galhos. Respirava fundo, mas rápido. O pulso acelerado. Sentia um misto de frustração, tédio e raiva, enquanto algumas lágrimas desciam pelos cantos dos meus olhos." },
+      { "id": "bloco-050", "tipo": "narracao", "cenario": "campo", "texto": "Perguntei:" },
+      { "id": "bloco-051", "tipo": "dialogo", "cenario": "campo", "texto": "— Isso vai acontecer?" },
+      { "id": "bloco-052", "tipo": "dialogo", "cenario": "campo", "texto": "— O que impede? — respondeu a sábia." }
+    ];
+
+    let indiceAtual = 0;
+    const container = document.getElementById('text-container');
+    const body = document.body;
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+
+    function renderizarBloco() {
+      const bloco = historia[indiceAtual];
+
+      // 1. Esconde o texto atual com a animação CSS
+      container.style.opacity = 0;
+      container.style.transform = 'translateY(-15px)'; // Sobe um pouquinho antes de sumir
+
+      // Desabilita botões temporariamente
+      btnPrev.disabled = true;
+      btnNext.disabled = true;
+
+      // Espera a animação de saída terminar (0.5s = 500ms)
+      setTimeout(() => {
+        
+        // 2. Muda o cenário visual (fundo)
+        if (bloco.cenario === 'visao_bar') {
+          body.classList.add('modo-visao');
+        } else {
+          body.classList.remove('modo-visao');
+        }
+
+        // 3. Monta o HTML do novo bloco dependendo do 'tipo'
+        let tag = 'p';
+        if (bloco.tipo === 'titulo') tag = 'h1';
+
+        container.innerHTML = `<${tag} class="${bloco.tipo}">${bloco.texto}</${tag}>`;
+
+        // 4. Prepara a animação de entrada (coloca embaixo e revela)
+        container.style.transform = 'translateY(15px)';
+        
+        // Pequeno atraso para o navegador registrar a mudança de posição
+        requestAnimationFrame(() => {
+          container.style.opacity = 1;
+          container.style.transform = 'translateY(0)';
+        });
+
+        // 5. Atualiza o estado dos botões
+        btnPrev.disabled = indiceAtual === 0;
+        btnNext.disabled = indiceAtual === historia.length - 1;
+
+      }, 500);
+    }
+
+    // Eventos de clique nas setas
+    btnPrev.addEventListener('click', () => {
+      if (indiceAtual > 0) {
+        indiceAtual--;
+        renderizarBloco();
+      }
+    });
+
+    btnNext.addEventListener('click', () => {
+      if (indiceAtual < historia.length - 1) {
+        indiceAtual++;
+        renderizarBloco();
+      }
+    });
+
+    // Permitir navegação pelo teclado (Setas Esquerda/Direita e Espaço)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        btnNext.click();
+      } else if (e.key === 'ArrowLeft') {
+        btnPrev.click();
+      }
+    });
+
+    // Inicia a aplicação na primeira tela (com um leve delay para dar um efeito bonito ao carregar a página)
+    setTimeout(renderizarBloco, 200);
+
+  </script>
+</body>
+</html>
